@@ -1,23 +1,4 @@
-// pages/dashboard.js
-"use client"; // Indique que ce composant est un composant client
-
-import { getSession, withPageAuthRequired } from "@okta/okta-react";
-
-export const getServerSideProps = async (context) => {
-  const session = await getSession(context.req, context.res);
-  if (!session) {
-    return {
-      redirect: {
-        destination: "/login",
-        permanent: false,
-      },
-    };
-  }
-
-  return {
-    props: {},
-  };
-};
+// src/app/dashboard/page.js
 
 const Dashboard = () => {
   return (
@@ -28,4 +9,4 @@ const Dashboard = () => {
   );
 };
 
-export default withPageAuthRequired(Dashboard);
+export default Dashboard;

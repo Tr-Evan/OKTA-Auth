@@ -12,7 +12,7 @@ import Link from "next/link";
 const oktaAuth = new OktaAuth(oktaConfig);
 
 const Login = () => {
-  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
 
@@ -21,11 +21,12 @@ const Login = () => {
 
     try {
       const transaction = await oktaAuth.signInWithCredentials({ 
-        username: name, 
+        username: email, 
         password: password 
       });
 
       if (transaction.status === 'SUCCESS') {
+        document.cookie = `okta-session-token=${transaction.sessionToken}; path=/;`;
         oktaAuth.tokenManager.setTokens(transaction.tokens);
         router.push('/dashboard');
       } else {
