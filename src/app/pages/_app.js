@@ -1,25 +1,16 @@
 // pages/_app.js
-import { useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { Security, LoginCallback } from '@okta/okta-react';
+import { OktaAuth, toRelativeUrl } from '@okta/okta-auth-js';
+import { OktaAuthProvider } from '@okta/okta-react';
 import oktaConfig from '../oktaConfig';
 
-function OktaAuth({ Component, pageProps }) {
-  const router = useRouter();
+const oktaAuth = new OktaAuth(oktaConfig);
 
-  useEffect(() => {
-    if (router.pathname === '/callback') return;
-    const oktaAuth = new OktaAuth(oktaConfig);
-    if (oktaAuth.tokenManager.getTokens()) {
-      router.push('/');
-    }
-  }, [router]);
-
+const MyApp = ({ Component, pageProps }) => {
   return (
-    <Security {...oktaConfig}>
+    <OktaAuthProvider oktaAuth={oktaAuth}>
       <Component {...pageProps} />
-    </Security>
+    </OktaAuthProvider>
   );
-}
+};
 
-export default OktaAuth;
+export default MyApp;
