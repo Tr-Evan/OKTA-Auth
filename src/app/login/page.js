@@ -22,7 +22,7 @@ const Login = () => {
     try {
       const transaction = await oktaAuth.signInWithCredentials({ 
         username: email, 
-        password: password 
+        password: password
       });
 
       if (transaction.status === 'SUCCESS') {
