@@ -41,7 +41,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
 ```bash
 AUTH0_SECRET='use [openssl rand -hex 32] to generate a 32 bytes value'
 AUTH0_BASE_URL='http://localhost:3000'
-AUTH0_ISSUER_BASE_URL='URL-APP'
-AUTH0_CLIENT_ID='id'
-AUTH0_CLIENT_SECRET='SECRET-KEY'
+AUTH0_ISSUER_BASE_URL='URL-APP-NEXTJS'
+AUTH0_CLIENT_ID='ID-OKTA'
+AUTH0_CLIENT_SECRET='SECRET-KEY-OKTA'
 ```
