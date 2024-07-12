@@ -35,3 +35,13 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
 # OKTA-Auth
+
+# Contenu du .env.local 
+
+```bash
+AUTH0_SECRET='use [openssl rand -hex 32] to generate a 32 bytes value'
+AUTH0_BASE_URL='http://localhost:3000'
+AUTH0_ISSUER_BASE_URL='https://dev-fw0hwnkbbpt8a7d4.eu.auth0.com'
+AUTH0_CLIENT_ID='F3EIFvBSAGcWP1oIdwPFXgZ0Iboe92V4'
+AUTH0_CLIENT_SECRET='Sfjzrb5WklxcvKRIVfyBrEZ9nx1JolTJKsg4I0eTMEb-xpoQ9YiP2PmopS82o0L_'
+```
