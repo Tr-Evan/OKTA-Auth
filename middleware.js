@@ -16,20 +16,35 @@ export async function middleware(request) {
 
     // Si aucun token de session n'est trouvé, redirige l'utilisateur vers la page de login
     if (!sessionToken) {
-      return NextResponse.redirect(new URL("/login", request.url));
+      return NextResponse.redirect(new URL("./api/auth/login", request.url));
     }
 
     try {
+      // Vérifie la validité du token de session
+      await oktaAuth.token.verify(sessionToken);
+
       // Vérifie les informations de l'utilisateur à l'aide du token de session
       const user = await oktaAuth.token.getUserInfo(sessionToken);
       // Si les informations de l'utilisateur ne sont pas valides, redirige vers la page de login
       if (!user) {
-        return NextResponse.redirect(new URL("/login", request.url));
+        return NextResponse.redirect(new URL("./api/auth/login", request.url));
       }
     } catch (error) {
-      // En cas d'erreur lors de la vérification, redirige vers la page de login
-      console.error("Authentication error: ", error);
-      return NextResponse.redirect(new URL("/login", request.url));
+      // En cas d'erreur lors de la vérification, logge l'erreur et redirige vers la page de login
+      console.error("Authentication error:", error);
+      return NextResponse.redirect(new URL("./api/auth/login", request.url));
+    }
+  } else {
+    // Si le chemin n'est pas protégé, vérifie si l'utilisateur est authentifié
+    const sessionToken = request.cookies.get("okta-session-token");
+    if (sessionToken) {
+      try {
+        await oktaAuth.token.verify(sessionToken);
+      } catch (error) {
+        // Si le token de session est invalide, supprime le cookie et redirige vers la page de login
+        request.cookies.delete("okta-session-token", { httpOnly: true, secure: true });
+        return NextResponse.redirect(new URL("./api/auth/login", request.url));
+      }
     }
   }
 
