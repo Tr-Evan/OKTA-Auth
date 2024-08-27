@@ -6,6 +6,9 @@ import { useUser } from "@auth0/nextjs-auth0/client";
 
 function ProtectedContent() {
   const { user, error, isLoading } = useUser();
+  if (isLoading) return <div>Chargement...</div>;
+  if (error) return <div>Erreur de connexion</div>;
+  //if (!user) return <div>Vous devez vous connecter pour accéder à ce contenu</div>;
 
 
   if (isLoading)
