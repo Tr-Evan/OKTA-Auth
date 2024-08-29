@@ -22,5 +22,4 @@ const LoginCallback = () => {
 
   return <div>Loading...</div>;
 };
-
 export default LoginCallback;
