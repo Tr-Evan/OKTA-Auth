@@ -1,58 +1,56 @@
-// middleware.js
 import { NextResponse } from "next/server";
-import { NextRequest } from "next/server";
-import { OktaAuth } from "@okta/okta-auth-js";
-import oktaConfig from "./oktaConfig";
 
-const oktaAuth = new OktaAuth(oktaConfig);
+// Assurez-vous que ces variables d'environnement sont configurées correctement
+const OKTA_DOMAIN = process.env.AUTH0_ISSUER_BASE_URL; // Exemple : "dev-123456.okta.com"
+const CLIENT_ID = process.env.AUTH0_CLIENT_ID;
 
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
+  const loginUrl = new URL("/api/auth/login", request.url);
 
-  // Si le chemin commence par /dashboard, nous devons vérifier l'authentification
+  // Récupère le token de session depuis les cookies
+  const sessionToken = request.cookies.get("appSession");
+
+  console.log("Cookies de la requête :", request.cookies); // Affiche tous les cookies
+
+  // Si le chemin est protégé
   if (pathname.startsWith("/dashboard")) {
-    // Récupère le token de session Okta depuis les cookies
-    const sessionToken = request.cookies.get("okta-session-token");
-
-    // Si aucun token de session n'est trouvé, redirige l'utilisateur vers la page de login
     if (!sessionToken) {
-      return NextResponse.redirect(new URL("./api/auth/login", request.url));
+      console.log("Aucun token de session trouvé.");
+      return NextResponse.redirect(loginUrl);
     }
 
     try {
-      // Vérifie la validité du token de session
-      await oktaAuth.token.verify(sessionToken);
+      // Vérifie la validité du token via l'API Okta
+      const response = await fetch(`https://${OKTA_DOMAIN}/oauth2/v1/introspect`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Basic ${Buffer.from(`${CLIENT_ID}:F3EIFvBSAGcWP1oIdwPFXgZ0Iboe92V4`).toString('base64')}`, // Encode les identifiants du client
+        },
+        body: new URLSearchParams({
+          token: sessionToken,
+          token_type_hint: "access_token",
+        }),
+      });
 
-      // Vérifie les informations de l'utilisateur à l'aide du token de session
-      const user = await oktaAuth.token.getUserInfo(sessionToken);
-      // Si les informations de l'utilisateur ne sont pas valides, redirige vers la page de login
-      if (!user) {
-        return NextResponse.redirect(new URL("./api/auth/login", request.url));
+      const data = await response.json();
+
+      if (!data.active) {
+        console.log("Token non valide ou expiré.");
+        return NextResponse.redirect(loginUrl);
       }
+
+      console.log("Utilisateur authentifié :", data.sub);
     } catch (error) {
-      // En cas d'erreur lors de la vérification, logge l'erreur et redirige vers la page de login
-      console.error("Authentication error:", error);
-      return NextResponse.redirect(new URL("./api/auth/login", request.url));
-    }
-  } else {
-    // Si le chemin n'est pas protégé, vérifie si l'utilisateur est authentifié
-    const sessionToken = request.cookies.get("okta-session-token");
-    if (sessionToken) {
-      try {
-        await oktaAuth.token.verify(sessionToken);
-      } catch (error) {
-        // Si le token de session est invalide, supprime le cookie et redirige vers la page de login
-        request.cookies.delete("okta-session-token", { httpOnly: true, secure: true });
-        return NextResponse.redirect(new URL("./api/auth/login", request.url));
-      }
+      console.error("Erreur d'authentification :", error);
+      return NextResponse.redirect(loginUrl);
     }
   }
 
-  // Si le chemin n'est pas protégé ou si l'utilisateur est authentifié, continue la requête
   return NextResponse.next();
 }
 
-// Spécifie quelles routes doivent utiliser ce middleware
 export const config = {
   matcher: ["/dashboard/:path*"],
 };
